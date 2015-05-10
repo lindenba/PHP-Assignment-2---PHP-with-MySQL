@@ -1,5 +1,5 @@
 <?php
-ini_set('display_erros', 'On');
+ini_set('display_errors', 'On');
 ?>
 
 
@@ -11,11 +11,14 @@ ini_set('display_erros', 'On');
   </header>
 <body>
     <form action="vid_inventory.php" method="POST">
-      <h2>Add a Video:</h2>
+      <h2>Video</h2>
+      <fieldset>
+        <legend>Add a video:</legend>
         Name: <input type="text" name="name">
         Category: <input type="text" name="category">
         Length: <input type="number" name="length">
         <input type="submit" name="addVideo" value="Add">
+      </fieldset>
     </form>
 <?php
   $mysqli = new mysqli("oniddb.cws.oregonstate.edu", "lindenba-db", "ntVB3yI2RNUm7xHg", "lindenba-db");
@@ -133,55 +136,119 @@ if(isset($_POST ['deleteVideo']))
  $stmt->close();
 }
 
+if(isset($_POST['deleteALLVideo']))
+{
+  if(!($stmt = $mysqli->prepare("DELETE FROM videoInventory")))
+  {
+    echo "Prepare failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
+  }
+  if(!$stmt->execute())
+  {
+    echo "Execute failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
+  }
+  $stmt->close();
+  echo '<h2>'. "Video Inventory List". '</h2>';
+  echo  '<table border="1">';
+  echo  '<tr><td>Name</td><td>Category</td><td>Length</td><td>Available</td><td>Status</td><td>Remove</td></tr>';
 
-
+}
+else
+{
+ //if(!isset($_POST['filterCategory']) && !isset($_POST['deleteALLVideo'])){
 //select from database get name, cat, len, and rented to add to a table
-if(!($stmt = $mysqli->prepare("SELECT id, name, category, length, rented FROM videoInventory")))
-{
-  echo "Prepare failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
-}
-if(!$stmt->execute())
-{
-  echo "Execute failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
+    if(!($stmt = $mysqli->prepare("SELECT id, name, category, length, rented FROM videoInventory")))
+    {
+        echo "Prepare failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
+    }
+//    }
+    if(!$stmt->execute())
+    {
+        echo "Execute failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
+    }
+    //bind those results into these variables
+    if(!$stmt->bind_result($id, $name, $category, $length, $rented))
+    {
+        echo "Bind failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
+    }
+        echo '<h2>'. "Video Inventory List". '</h2>';
+        echo  '<table border="1">';
+        echo     '<tr><td>Name</td><td>Category</td><td>Length</td><td>Available</td><td>Status</td><td>Remove</td></tr>';
+    //this will fetch until it can't fetch any more
+    while($stmt->fetch())
+    {
+      if($rented == 'false')
+      {
+        $rented = 'Available';
+      }
+      else
+      {
+        $rented = 'Out';
+      }
+          echo "<tr>\n<td>\n" . $name . "\n</td>\n<td>\n" . $category .
+               "\n</td>\n<td>\n" . $length . "\n</td>\n<td>\n". $rented . "\n</td>\n";
+          //status of the video
+          echo '<td><form method="POST" action="vid_inventory.php">';
+          echo "Check-" . "in" . '<input type="radio" name="statusCheck" value='."in". '>';
+          echo "out" . '<input type="radio" name="statusCheck" value='."out". '>';
+          echo '<input type="hidden" name="statusInOut" value='. $id . '>';
+          echo '<input type="submit" value="Update" name=' . "statusVideo" . '></form>';
+          echo '<td><form method="POST" action="vid_inventory.php">';
+          //delete button
+          echo '<input type="hidden" name="delete" value='. $id . '>';
+          echo  '<input type="submit" name=' . "deleteVideo" . ' value= "delete" ></form></tr>';
+    }
+    $stmt->close();
+    echo '</table>';
 }
 
-//bind those results into these variables
-if(!$stmt->bind_result($id, $name, $category, $length, $rented))
+if(isset($_POST['filterCategory']))
 {
-  echo "Bind failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
-}
-echo '<h2>'. "Video Inventory List". '</h2>';
-echo  '<table border="1">';
-echo     '<tr><td>Name</td><td>Category</td><td>Length</td><td>Available</td><td>Status</td><td>Remove</td></tr>';
- //this will fetch until it can't fetch any more
-while($stmt->fetch())
-{
-  if($rented == 'false')
+  if($_POST['filter'] == 'allMovies')
   {
-    $rented = 'Available';
+    if(!($stmt = $mysqli->prepare("SELECT id, name, category, length, rented FROM videoInventory")))
+    {
+      echo "Prepare failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
+    }
+    else
+    {
+       if(!($stmt = $mysqli->prepare("SELECT id, name, category, length, rented FROM videoInventory WHERE category=(?)")))
+      {
+        echo "Prepare failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
+      }
+      if(!$stmt->bind_param("s", $_POST['filter']))
+      {
+        echo "Bind failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
+      }
+    }
   }
-  else
-  {
-    $rented = 'Out';
-  }
-  echo "<tr>\n<td>\n" . $name . "\n</td>\n<td>\n" . $category .
-       "\n</td>\n<td>\n" . $length . "\n</td>\n<td>\n". $rented . "\n</td>\n";
-  //status of the video
-  echo '<td><form method="POST" action="vid_inventory.php">';
-  echo "Check-" . "in" . '<input type="radio" name="statusCheck" value='."in". '>';
-  echo "out" . '<input type="radio" name="statusCheck" value='."out". '>';
-  echo '<input type="hidden" name="statusInOut" value='. $id . '>';
-  echo '<input type="submit" value="Update" name=' . "statusVideo" . '></form>';
-  echo '<td><form method="POST" action="vid_inventory.php">';
-  //delete button
-  echo '<input type="hidden" name="delete" value='. $id . '>';
-  echo  '<input type="submit" name=' . "deleteVideo" . ' value= "delete" ></form></tr>';
 }
-$stmt->close();
 
+  if(!($stmt = $mysqli->prepare("SELECT DISTINCT category FROM videoInventory")))
+  {
+     echo "Prepare failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
+  }
+  if(!$stmt->execute())
+  {
+      echo "Execute failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
+  }
+  $Fcategory=NULL;
+  if(!$stmt->bind_result($Fcategory))
+  {
+     echo "Bind failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
+  }
+    echo '<form method="POST" action="vid_inventory.php">';
+    echo '<fieldset><legend>Filter Videos:</legend>';
+    echo '<select name='. "filter" .'>';
+  while($stmt->fetch())
+  {
+    echo '<option value='. $Fcategory. '>' .$Fcategory. '</option>';
+  }
+    echo '<option selected value='. "allMovies" . '>' . "All Movies" . '</option>';
+    echo '<input type= "submit" value="submit" name=' . "filterCategory" . '>';
+    echo '</select></fieldset></form>';
 
-
-echo '</table>';
+    echo '<form method="POST" action="vid_inventory.php">';
+    echo '<fieldset><legend>Delete Inventory:</legend><input type="submit" name=' . "deleteALLVideo" . ' value= "Delete"</fieldset></form>';
 
 ?>
 
