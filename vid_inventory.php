@@ -35,7 +35,7 @@ ini_set('display_errors', 'On');
 
     if($mysqli->query($videoTable))
     {
-      echo "error creating table ";
+    //  echo "error creating table ";
     }
 
 //if($_POST){
@@ -152,15 +152,14 @@ if(isset($_POST['deleteALLVideo']))
   echo  '<tr><td>Name</td><td>Category</td><td>Length</td><td>Available</td><td>Status</td><td>Remove</td></tr>';
 
 }
-else
-{
- //if(!isset($_POST['filterCategory']) && !isset($_POST['deleteALLVideo'])){
+// else
+// {
 //select from database get name, cat, len, and rented to add to a table
     if(!($stmt = $mysqli->prepare("SELECT id, name, category, length, rented FROM videoInventory")))
     {
         echo "Prepare failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
     }
-//    }
+
     if(!$stmt->execute())
     {
         echo "Execute failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
@@ -199,7 +198,8 @@ else
     }
     $stmt->close();
     echo '</table>';
-}
+// }
+
 
 if(isset($_POST['filterCategory']))
 {
@@ -223,7 +223,7 @@ if(isset($_POST['filterCategory']))
   }
 }
 
-  if(!($stmt = $mysqli->prepare("SELECT DISTINCT category FROM videoInventory")))
+if(!($stmt = $mysqli->prepare("SELECT DISTINCT category FROM videoInventory")))
   {
      echo "Prepare failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
   }
@@ -231,13 +231,12 @@ if(isset($_POST['filterCategory']))
   {
       echo "Execute failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
   }
-  $Fcategory=NULL;
   if(!$stmt->bind_result($Fcategory))
   {
      echo "Bind failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
   }
-    echo '<form method="POST" action="vid_inventory.php">';
     echo '<fieldset><legend>Filter Videos:</legend>';
+    echo '<form method="POST" action="vid_inventory.php">';
     echo '<select name='. "filter" .'>';
   while($stmt->fetch())
   {
