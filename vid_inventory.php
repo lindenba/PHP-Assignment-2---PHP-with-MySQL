@@ -21,12 +21,14 @@ ini_set('display_errors', 'On');
       </fieldset>
     </form>
 <?php
+//used code from PHP.net, Wolford lectures
+//connects to my database on the onid server
   $mysqli = new mysqli("oniddb.cws.oregonstate.edu", "lindenba-db", "ntVB3yI2RNUm7xHg", "lindenba-db");
   if($mysqli->connect_errno)
   {
     echo "Failed to connect to MySQL: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
   }
-
+//create a table if it doesn't already exist
   $videoTable = 'CREATE TABLE IF NOT EXISTS videoInventory
    (id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) UNIQUE NOT NULL,
@@ -37,7 +39,7 @@ ini_set('display_errors', 'On');
     {
     //  echo "error creating table ";
     }
-
+//add a video to the table
 //if($_POST){
   if(isset($_POST["addVideo"])){
       $required=false;
@@ -121,6 +123,7 @@ ini_set('display_errors', 'On');
 //delete individual videos
 if(isset($_POST ['deleteVideo']))
 {
+  //delete individual videos from inventory using id
   if(!($stmt = $mysqli->prepare("DELETE FROM videoInventory WHERE id=(?)")))
   {
     echo "Prepare failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
@@ -136,8 +139,10 @@ if(isset($_POST ['deleteVideo']))
  $stmt->close();
 }
 
+//delete all videos
 if(isset($_POST['deleteALLVideo']))
 {
+  //delete all from inventory
   if(!($stmt = $mysqli->prepare("DELETE FROM videoInventory")))
   {
     echo "Prepare failed: " .$mysqli->connect_errno. " " .$mysqli->connect_error;
@@ -200,7 +205,7 @@ if(isset($_POST['deleteALLVideo']))
     echo '</table>';
 // }
 
-
+//filter category of the videos
 if(isset($_POST['filterCategory']))
 {
   if($_POST['filter'] == 'allMovies')
