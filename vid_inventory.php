@@ -79,18 +79,7 @@ ini_set('display_errors', 'On');
         }
       }
     }
-    // else if (isset($_POST["deleteVid"]))
-    // {
-    //   $deleteEntry = $_POST["deleteVid"];
-    //   echo $_POST["deleteVid"];
-    //   $delete= "DELETE FROM videos WHERE id = '".$deleteEntry."'";
-    //   $deleted=$mysqli->query($delete);
-    //   if($deleted)
-    //   echo "Video deleted";
-    //   else
-    //     echo "Unable to delte";
-    // }
-  //}
+  
 //get status of the video, all videos when added to inventory are available.
   if(isset($_POST['statusVideo']))
   {
